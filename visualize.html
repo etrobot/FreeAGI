@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/bulmaswatch/darkly/bulmaswatch.min.css">
+	<script src="mermaid.min.js"></script>
+	<script>
+		mermaid.initialize({
+			fontSize: "16px",
+			theme: "dark"
+		});
+	</script>
+	<style>
+		#main {
+			margin-top: 50%;
+			text-align: center;
+		}
+	</style>
+	<title>Nested Table</title>
+</head>
+
+<body>
+	<div class="columns">
+		<div class="column">
+			<div id="main">
+				<button class="button is-loading"></button>
+			</div>
+		</div>
+		<div class="column is-three-quarters table-container">
+			<table id="nestedTable" class="table is-fullwidth">
+			</table>
+		</div>
+	</div>
+	<script>
+		readJson();
+		function readJson() {
+			fetch("./memory.json")
+				.then(response => response.json())
+				.then(data => {
+					const main =document.getElementById("main");
+					main.innerHTML=data["mermaid"]
+					if(data["mermaid"] && !main.classList.contains('mermaid'))
+						main.classList.add("mermaid")
+					const nestedTable = document.getElementById("nestedTable");
+					nestedTable.innerHTML="<tbody></tbody>"
+					const tbody = nestedTable.getElementsByTagName("tbody")[0];
+					function buildTable(data, parentRow, depth) {
+						for (let step in data) {
+							let row = document.createElement("tr");
+							parentRow ? parentRow.appendChild(row) : tbody.appendChild(row);
+							let stepCell = document.createElement("td");
+							let title = document.createElement("div");
+							title.innerHTML = step;
+							stepCell.appendChild(title);
+							// let merCell = document.createElement("div");
+							// data[step]["mermaid"] ? merCell.classList.add("mermaid") : null;
+							// stepCell.appendChild(merCell);
+							row.appendChild(stepCell);
+							let substepsCell = document.createElement("td");
+							substepsCell.classList.add("loading");
+							row.appendChild(substepsCell);
+							if (depth > 0) {
+								let subtable = document.createElement("table");
+								subtable.classList.add("table");
+								substepsCell.appendChild(subtable);
+								let subtableBody = document.createElement("tbody");
+								subtable.appendChild(subtableBody);
+								if (Object.keys(data[step]).length > 0)
+									buildTable(data[step]["steps"], subtableBody, depth - 1);
+							}
+						}
+					}
+
+					function getMaxDepth(data) {
+						let maxDepth = 0;
+						for (let step in data) {
+							if (Object.keys(data[step]).length > 0) {
+								let depth = getMaxDepth(data[step]["steps"]) + 1;
+								if (depth > maxDepth) {
+									maxDepth = depth;
+								}
+							}
+						}
+						return maxDepth;
+					}
+
+					let maxDepth = getMaxDepth(data["steps"]);
+					buildTable(data["steps"], null, maxDepth);
+				})
+				.catch(error => console.error(error));
+		}
+		readJson();
+// 		setInterval(function() {
+// 			readJson();
+//   mermaid.init(undefined, '.mermaid');
+// }, 5000);
+
+	</script>
+</body>
+
+</html>
