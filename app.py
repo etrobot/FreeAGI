@@ -21,7 +21,11 @@ def plan(cmd: str):
     bingBot = bingChat(cookies=cookies, proxy=config['sys']['proxy'])
     response = asyncio.run(bingBot.ask(prompt=prompt0, conversation_style=ConversationStyle.creative,
                             wss_link="wss://sydney.bing.com/sydney/ChatHub"))
-    replyTxt=response["item"]["messages"][1]["adaptiveCards"][0]["body"][0]["text"]
+    replyTxt:str=response["item"]["messages"][1]["adaptiveCards"][0]["body"][0]["text"]
+    if not 'mermaid' in replyTxt:
+        replyTxt=replyTxt.replace('\ngraph ','```mermaid\ngraph ')
+        if not replyTxt.endswith('```'):
+            replyTxt=replyTxt+'```'
     logger.info(replyTxt)
     pattern = r"```mermaid\n(.*?)```"
     mermaid_content: str = re.search(pattern, replyTxt, re.S).group(1).strip()
