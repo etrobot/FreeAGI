@@ -18,7 +18,10 @@ def plan(cmd: str):
 
     # generate plan in mermaid format
     logger.info('asking New Bing about 『%s』...' % prompt0)
-    bingBot = bingChat(cookies=cookies, proxy=config['sys']['proxy'])
+    if 'sys' in config.keys() and 'proxy' in config['sys'].keys():
+        bingBot = bingChat(cookies=cookies, proxy=config['sys']['proxy'])
+    else:
+        bingBot = bingChat(cookies=cookies)
     response = asyncio.run(bingBot.ask(prompt=prompt0, conversation_style=ConversationStyle.creative,
                             wss_link="wss://sydney.bing.com/sydney/ChatHub"))
     replyTxt:str=response["item"]["messages"][1]["adaptiveCards"][0]["body"][0]["text"]
