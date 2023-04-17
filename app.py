@@ -10,12 +10,12 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=',think about a executable plan and output the breif steps or key points in Mermaid format.reply in language '+LANG
+    promptTemplate=',output the breif steps or key points in Mermaid.reply in language '+LANG
     if cmd == config['cmd']['cmd']:
         prompt0 = 'Final Goal:%s\n'%cmd + promptTemplate
     else:
         missons=''.join(steps).replace('[','.').replace(']',';')
-        prompt0 = 'Final Goal:%s'%config['cmd']['cmd']+'\nKey points:%s'%missons + '\nSub-misson:' + cmd + '\nFor the Sub-misson,'+ promptTemplate
+        prompt0 = 'Final Goal:%s'%config['cmd']['cmd']+'\nKey points:%s'%missons + '\nSub-misson:' + cmd + '\nFor the Sub-misson '+ promptTemplate
 
     # generate plan in mermaid format
     logger.info('asking New Bing about 『%s』...' % prompt0)
@@ -79,4 +79,4 @@ if __name__ == '__main__':
     logger=logging.getLogger(__name__)
     with open('./cookies.json', 'r') as f:
         cookies = json.load(f)
-        build_tree(2, config['cmd']['cmd'])
+        build_tree(3, config['cmd']['cmd'])
