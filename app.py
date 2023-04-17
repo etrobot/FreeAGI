@@ -10,7 +10,7 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=',output the breif steps or key points in Mermaid.reply in language '+LANG
+    promptTemplate=',output the breif steps or key points in Mermaid format.reply in language '+LANG
     if cmd == config['cmd']['cmd']:
         prompt0 = 'Final Goal:%s\n'%cmd + promptTemplate
     else:
