@@ -8,13 +8,14 @@ from langdetect import detect
 import time as t
 import logging
 
-def plan(cmd: str):
+def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=',make a excutable plan considering using text/code created by ChatGPT, output the breif steps in Mermaid format.reply in language '+LANG
+    promptTemplate=',think about a executable plan and output the breif steps or key points in Mermaid format.reply in language '+LANG
     if cmd == config['cmd']['cmd']:
-        prompt0 = 'Final Goal:' + cmd + promptTemplate
+        prompt0 = 'Final Goal:%s\n'%cmd + promptTemplate
     else:
-        prompt0 = 'Final Goal:' + config['cmd']['cmd'] + '\nSub-misson:' + cmd + '\nFor the Sub-misson'+ promptTemplate
+        missons=''.join(steps).replace('[','.').replace(']',';')
+        prompt0 = 'Final Goal:%s'%config['cmd']['cmd']+'\nKey points:%s'%missons + '\nSub-misson:' + cmd + '\nFor the Sub-misson,'+ promptTemplate
 
     # generate plan in mermaid format
     logger.info('asking New Bing about 『%s』...' % prompt0)
@@ -24,15 +25,16 @@ def plan(cmd: str):
         bingBot = bingChat(cookies=cookies)
     response = asyncio.run(bingBot.ask(prompt=prompt0, conversation_style=ConversationStyle.creative,
                             wss_link="wss://sydney.bing.com/sydney/ChatHub"))
-    replyTxt:str=response["item"]["messages"][1]["adaptiveCards"][0]["body"][0]["text"]
+    replyTxt:str=response["item"]["messages"][1]["adaptiveCards"][0]["body"][0]["text"].replace('graph LR','graph TD')
     if not 'mermaid' in replyTxt:
         replyTxt=replyTxt.replace('\ngraph ','```mermaid\ngraph ')
-        if not replyTxt.endswith('```'):
-            replyTxt=replyTxt+'```'
     logger.info(replyTxt)
-    pattern = r"```mermaid\n(.*?)```"
-    mermaid_content: str = re.search(pattern, replyTxt, re.S).group(1).strip()
-    # logger.info(mermaid_content)
+    mermaid = re.search(r"```mermaid\n(.*?)```", replyTxt, re.S)
+    if mermaid:
+        mermaid_content=mermaid.group(1).strip()
+    else:
+        mermaid = re.search(r"```mermaid\n(.*?)\]\n\n", replyTxt, re.S)
+        mermaid_content = mermaid.group(1).strip()
     mermaidJson = {
         # 'reply': replyTxt,
         # 'conversation_id': None,
@@ -47,13 +49,13 @@ def plan(cmd: str):
     return mermaidJson
 
 
-def build_tree(depth: int, mermaidStep: str, current_depth: int = 0) -> dict:
+def build_tree(depth: int,mermaidStep: str, current_depth: int = 0,steps:list=None) -> dict:
     if depth == 0:
         return {}
     else:
-        node = plan(mermaidStep)
+        node = plan(mermaidStep,steps)
         for x in node['steps'].keys():
-            node['steps'][x] = build_tree(depth - 1, x, current_depth + 1)
+            node['steps'][x] = build_tree(depth - 1, x, current_depth + 1,node['steps'])
             if current_depth == 0:
                 with open('memory.json', 'w', encoding="utf-8") as f:
                     json.dump(node, f)
@@ -63,7 +65,10 @@ def build_tree(depth: int, mermaidStep: str, current_depth: int = 0) -> dict:
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('config.ini')
-    LANG=detect(config['cmd']['cmd'])
+    if 'lang' in config['cmd'].keys():
+        LANG = config['cmd']['lang']
+    else:
+        LANG = detect(config['cmd']['cmd'])
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)8.8s] %(message)s",

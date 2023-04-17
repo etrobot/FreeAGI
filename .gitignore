@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# project related
 config.ini
-*.json
+cookies.json

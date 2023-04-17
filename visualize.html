@@ -3,13 +3,7 @@
 
 <head>
 	<link rel="stylesheet" href="https://unpkg.com/bulmaswatch/darkly/bulmaswatch.min.css">
-	<script src="mermaid.min.js"></script>
-	<script>
-		mermaid.initialize({
-			fontSize: "16px",
-			theme: "dark"
-		});
-	</script>
+	<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 	<style>
 		#main {
 			margin-top: 50%;
@@ -21,26 +15,26 @@
 
 <body>
 	<div class="columns">
-		<div class="column">
+		<div class="column is-one-quarter">
 			<div id="main">
 				<button class="button is-loading"></button>
 			</div>
 		</div>
-		<div class="column is-three-quarters table-container">
+		<div class="column table-container">
 			<table id="nestedTable" class="table is-fullwidth">
 			</table>
 		</div>
 	</div>
 	<script>
-		readJson();
 		function readJson() {
 			fetch("./memory.json")
 				.then(response => response.json())
 				.then(data => {
 					const main =document.getElementById("main");
-					main.innerHTML=data["mermaid"]
 					if(data["mermaid"] && !main.classList.contains('mermaid'))
 						main.classList.add("mermaid")
+						mermaid.render("preparedScheme", data["mermaid"],()=>{main.innerHTML=data["mermaid"]});
+						main.classList.remove('data-processed');
 					const nestedTable = document.getElementById("nestedTable");
 					nestedTable.innerHTML="<tbody></tbody>"
 					const tbody = nestedTable.getElementsByTagName("tbody")[0];
@@ -90,11 +84,16 @@
 				.catch(error => console.error(error));
 		}
 		readJson();
-// 		setInterval(function() {
-// 			readJson();
-//   mermaid.init(undefined, '.mermaid');
-// }, 5000);
+		// setInterval(()=>{readJson();
+		// },1000)
 
+
+	</script>
+	<script>
+		mermaid.initialize({
+			fontSize: "16px",
+			theme: "dark"
+		})
 	</script>
 </body>
 
