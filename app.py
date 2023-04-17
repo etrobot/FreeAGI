@@ -10,7 +10,7 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=',output the breif steps or key points in Mermaid format.reply in language '+LANG
+    promptTemplate=',think about how to get a good result, output the breif steps or key points in Mermaid format.reply in language '+LANG
     if cmd == config['cmd']['cmd']:
         prompt0 = 'Final Goal:%s\n'%cmd + promptTemplate
     else:
@@ -79,4 +79,4 @@ if __name__ == '__main__':
     logger=logging.getLogger(__name__)
     with open('./cookies.json', 'r') as f:
         cookies = json.load(f)
-        build_tree(3, config['cmd']['cmd'])
+        build_tree(2, config['cmd']['cmd'])
