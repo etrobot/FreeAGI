@@ -10,12 +10,12 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=',think about how to get a good result, output the breif steps or key points in Mermaid syntax.reply in language '+LANG
+    promptTemplate=',output the breif steps or key points in Mermaid format. Reply in language '+LANG
     if cmd == config['cmd']['cmd']:
-        prompt0 = 'Final Goal:%s\n'%cmd + promptTemplate
+        prompt0 = 'I started a project, final goal:%s.'%cmd + promptTemplate
     else:
-        missons=''.join(steps).replace('[','.').replace(']',';')
-        prompt0 = 'Final Goal:%s'%config['cmd']['cmd']+'\nKey points:%s'%missons + '\nSub-misson:' + cmd + '\nFor the Sub-misson '+ promptTemplate
+        missons=''.join(str(steps.index(x)+1)+'.'+x.replace(']',';').split('[')[-1] for x in steps)
+        prompt0 = 'Final Goal:%s'%config['cmd']['cmd']+'\nKey points:%s'%missons + '\nSub-misson:' + cmd[1:] + '\nFor the Sub-misson '+ promptTemplate
 
     # generate plan in mermaid format
     logger.info('asking New Bing about 『%s』...' % prompt0)
@@ -44,8 +44,9 @@ def plan(cmd: str,steps:list=None):
     }
     matches = re.findall(r'[a-zA-Z]+\[.*?\]', mermaid_content)
     for row in [x for x in matches if cmd not in x]:
-        mermaidJson['steps'][row] = {}
-    t.sleep(12)
+        if(len(row))>8:
+            mermaidJson['steps'][row] = {}
+    t.sleep(14)
     return mermaidJson
 
 
@@ -55,7 +56,7 @@ def build_tree(depth: int,mermaidStep: str, current_depth: int = 0,steps:list=No
     else:
         node = plan(mermaidStep,steps)
         for x in node['steps'].keys():
-            node['steps'][x] = build_tree(depth - 1, x, current_depth + 1,node['steps'])
+            node['steps'][x] = build_tree(depth - 1, x, current_depth + 1,list(node['steps'].keys()))
             if current_depth == 0:
                 with open('memory.json', 'w', encoding="utf-8") as f:
                     json.dump(node, f)
