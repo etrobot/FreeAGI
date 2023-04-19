@@ -10,7 +10,7 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=' Help me make ideas for the goal and output ideas in Mermaid format,dont write any program code. Reply in language '+LANG
+    promptTemplate=' Help me figure out key points for the goal and output key points in Mermaid format,dont write any program code. Reply in language '+LANG
     if cmd == config['cmd']['cmd']:
         prompt0 = 'I started a project, final goal:%s.'%cmd + promptTemplate
     else:
@@ -39,7 +39,7 @@ def plan(cmd: str,steps:list=None):
     }
     matches = re.findall(r'[a-zA-Z]+\[.*?\]', mermaid_content)
     for row in [x for x in matches if cmd not in x]:
-        if(len(row))>12:
+        if(len(row))>12 and not cmd in row:
             mermaidJson['steps'][row] = {}
     t.sleep(14)
     return mermaidJson
