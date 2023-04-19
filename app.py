@@ -10,7 +10,7 @@ import logging
 
 def plan(cmd: str,steps:list=None):
     # prepare command
-    promptTemplate=' help me make ideas and output in Mermaid format,dont write any program code. Reply in language '+LANG
+    promptTemplate=' Help me make ideas for the goal and output ideas in Mermaid format,dont write any program code. Reply in language '+LANG
     if cmd == config['cmd']['cmd']:
         prompt0 = 'I started a project, final goal:%s.'%cmd + promptTemplate
     else:
@@ -79,4 +79,4 @@ if __name__ == '__main__':
             bingBot = bingChat(cookies=cookies, proxy=config['sys']['proxy'])
         else:
             bingBot = bingChat(cookies=cookies)
-        build_tree(3, config['cmd']['cmd'])
+        build_tree(depth=2,mermaidStep=config['cmd']['cmd'])
