@@ -129,5 +129,4 @@ dmypy.json
 .pyre/
 
 # project related
-config.ini
 cookies.json
