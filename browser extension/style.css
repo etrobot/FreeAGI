@@ -1,9 +1,11 @@
 .bar{
+    color: grey;
+    text-align: center;
     font-size: .875rem;
-    padding: 0.1em;
-    background-color: rgb(21, 21, 21);
-    border-radius: 0.375rem;
-    margin: 0.1em;
+    padding: 0.4rem;
+    background-color: black;
+    border-radius: 0.3rem;
+    margin-top: 0.4rem;
 }
 .loader {
     float:right;
@@ -37,10 +39,17 @@
     }
   }
 
-  .autoBtn{
-    background-color: black;
-    float:right;
-    color: grey;
+  .hint{
     font-size: .875rem;
-    padding: 0.1em;
+    color: grey;
+  }
+
+  .autoBtn{
+    border-radius: 1rem;
+    width: 2rem;
+    background-color: #343541;
+    float:right;
+    color: white;
+    font-size: .875rem;
+    padding: 0.2rem;
   }

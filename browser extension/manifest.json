@@ -3,11 +3,6 @@
     "name": "AutoGPT",
     "version": "0.1",
     "description": " Add question a mermaid format ask and then ask step by step",
-    "icons": {
-        "16": "images/GPT2Markdown--16.png",
-        "48": "images/GPT2Markdown--48.png",
-        "128": "images/GPT2Markdown.png"
-    },
     "content_scripts": [
         {
             "matches": [
