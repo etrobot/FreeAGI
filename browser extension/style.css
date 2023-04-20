@@ -1,4 +1,4 @@
-.bar{
+.autobar{
     color: grey;
     text-align: center;
     font-size: .875rem;
@@ -7,8 +7,9 @@
     border-radius: 0.3rem;
     margin-top: 0.4rem;
 }
+
 .loader {
-    float:right;
+    float:left;
     position: relative;
     width: 1.5rem;
     height: 1.5rem;
@@ -17,7 +18,7 @@
     animation: animate 1s linear infinite;
   }
   
-  .loader::before {
+.loader::before {
     border-radius: 2rem;
     position: absolute;
     content: "";
@@ -30,7 +31,7 @@
     border: 0 solid white;
   }
   
-  @keyframes animate {
+@keyframes animate {
     from {
       transform: rotate(0deg);
     }
@@ -39,17 +40,15 @@
     }
   }
 
-  .hint{
+.hint{
     font-size: .875rem;
     color: grey;
   }
 
   .autoBtn{
     border-radius: 1rem;
-    width: 2rem;
     background-color: #343541;
-    float:right;
     color: white;
     font-size: .875rem;
-    padding: 0.2rem;
+    padding: .1rem;
   }
