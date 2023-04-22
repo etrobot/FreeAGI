@@ -9,7 +9,8 @@
 }
 
 .loader {
-    float:left;
+    margin: 0 auto;
+    display: none;
     position: relative;
     width: 1.5rem;
     height: 1.5rem;
@@ -47,7 +48,6 @@
 
   .autoBtn{
     border-radius: 1rem;
-    background-color: #343541;
     color: white;
     font-size: .875rem;
     padding: .1rem;
