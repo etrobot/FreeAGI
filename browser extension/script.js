@@ -36,11 +36,16 @@ async function addBar() {
     const textArea = document.querySelector("textArea");
     const textAreaParentParent = textArea.parentElement?.parentElement;
     let bar = document.createElement('div');
-    bar.innerHTML = '<button id="autorun" class="autoBtn"> AUTO ASK </button><div class="loader"></div>'
+    bar.innerHTML = '<span id="task">Paste tasks and click </span><button id="autorun" class="autoBtn"> AUTO ASK </button><div class="loader"></div>'
     bar.classList.add('autobar')
     var runBtn = bar.querySelector("#autorun");
     runBtn.addEventListener("click", buildPrompt);
-    var addBtn = bar.querySelector("#pasteTasks");
+    if(tasks!=undefined)
+        bar.querySelector('#task').innerHTML='Next Question: '+tasks[taskNum+1]
+    if(!document.querySelector('polygon')){
+        bar.querySelector('#autorun').style.display = "none"
+        bar.querySelector('.loader').style.display = "block"
+    }
     textAreaParentParent?.appendChild(bar)
     return bar
 }
@@ -76,14 +81,26 @@ function convertMermaid(replyCode) {
     return results
 }
 
+
+function convertMarkdown(txt) {
+     arr= txt.split('\n').map(item => {
+        const index = item.indexOf('.');
+        return item.slice(index + 1);
+      });
+      console.log(arr)
+      if(arr && arr.length>1){
+        tasks=arr
+        return true
+      }
+      return false
+}
+
 function task(){
     if(document.querySelector('polygon')){
         statusCode=clearInterval(statusCode)
-        buildPrompt()
-    }
-    else{
-        document.querySelector('#autorun').style.display = "none"
-        document.querySelector('.loader').style.display = "block"
+        if(tasks!=undefined && taskNum<tasks.length)
+            taskNum+=1;
+            buildPrompt()
     }
 }
 
@@ -93,16 +110,27 @@ function buildPrompt() {
     const promptTemplate = '. Help me figure out key points for the goal and output key points in Mermaid format,dont write any program code.';
     if (tasks==undefined) {
         if(textArea.value=='')return
-        goal = textArea.value;
-        textArea.value = 'Final Goal:' + goal + promptTemplate
-        statusCode = setInterval(checkTasks, 5000)
+        if(convertMarkdown(textArea.value)){
+            textArea.value=tasks[taskNum]
+            statusCode=setInterval(task,5000)
+        }
+        else{
+            goal = textArea.value;
+            textArea.value = 'Final Goal:' + goal + promptTemplate
+            statusCode = setInterval(checkTasks, 5000)}
     }else {
-        if(taskNum==tasks.length-1){return}
-        textArea.value = 'Final Goal:' + goal  + '. Focus on the point ' + tasks[taskNum] + promptTemplate;
+        if(taskNum==tasks.length || tasks[taskNum]==undefined){
+            textArea.value=='';
+            tasks=undefined;
+            taskNum=0;
+            document.querySelector('.loader').style.display = "none"
+            return}
+        if(goal==undefined){
+            textArea.value =tasks[taskNum]
+        }else
+            {textArea.value = 'Final Goal:' + goal  + '. Focus on the point ' + tasks[taskNum] + promptTemplate}
         document.querySelector('#autorun').click()
+        document.querySelector('#task').innerHTML='Next Question: '+tasks[taskNum+1]
         statusCode=setInterval(task,5000)
-        taskNum+=1
     }
-    document.querySelector('#autorun').style.display = "none"
-    document.querySelector('.loader').style.display = "block"
 }
