@@ -36,10 +36,12 @@ async function addBar() {
     const textArea = document.querySelector("textArea");
     const textAreaParentParent = textArea.parentElement?.parentElement;
     let bar = document.createElement('div');
-    bar.innerHTML = '<span id="task">Paste tasks and click </span><button id="autorun" class="autoBtn"> AUTO ASK </button><div class="loader"></div>'
+    bar.innerHTML = '<span id="task">Paste tasks and click </span><button id="autorun" class="autoBtn"> AUTO ASK </button> &nbsp; <button id="stopauto" class="autoBtn"> ■ </button><div class="loader"></div>'
     bar.classList.add('autobar')
     var runBtn = bar.querySelector("#autorun");
     runBtn.addEventListener("click", buildPrompt);
+    var stopBtn = bar.querySelector("#stopauto");
+    stopBtn.addEventListener("click", stopAuto);
     if(tasks!=undefined)
         bar.querySelector('#task').innerHTML='Next Question: '+tasks[taskNum+1]
     if(!document.querySelector('polygon')){
@@ -52,9 +54,9 @@ async function addBar() {
 
 
 function checkTasks() {
-    replyCode = document.querySelector('code');
-    if (replyCode) {
-        var tasksFromMermaid = convertMermaid(replyCode.innerHTML);
+    mermaidCode = document.querySelector('code');
+    if (mermaidCode) {
+        var tasksFromMermaid = convertMermaid(mermaidCode.innerHTML);
         if (tasks!=undefined && JSON.stringify(tasks) == JSON.stringify(tasksFromMermaid)) {
             statusCode = clearInterval(statusCode)
             console.log(tasks)
@@ -65,34 +67,45 @@ function checkTasks() {
     }
 }
 
+function stopAuto(){
+    statusCode=clearInterval(statusCode)
+    taskNum=tasks.length
+    bar.querySelector('#task').innerHTML='Next Question: '+tasks[taskNum+1]
+    const textArea = document.querySelector("textArea")
+    textArea.value=''
+}
 
-function convertMermaid(replyCode) {
-    var mermaid_content = replyCode.replace(/\(/g, '[').replace(/\)/g, ']').replace('\n',' ');
-    var regex = /\[(.+?)\]/g;
-    const matches = mermaid_content.match(regex);
-    if(!matches)return
+function convertMermaid(mermaidCode) {
+    var regex = /[\(\)\[\]\{\}][^\(\)\[\]\{\}]*[\(\)\[\]\{\}]/g;
+    const matches = mermaidCode.match(regex);
+    if(!matches)return false
     const results = [];
-    for (let i = 0; i < matches.length; i++) {
+    const regexGraph= /\s*graph[\s\S]*/; 
+    const cleanTxt=mermaidCode.replace(regexGraph,'')
+    results.push(cleanTxt+'\nPlease analyze the point: '+matches[0])
+    for (let i = 1; i < matches.length; i++) {
         const match = matches[i];
         const result = match.substring(1, match.length - 1);
         if(result!=goal && result.length>7)
-            results.push(result);
+            results.push(' next point: '+result);
     }
     return results
 }
 
 
 function convertMarkdown(txt) {
-     arr= txt.split('\n').map(item => {
-        const index = item.indexOf('.');
-        return item.slice(index + 1);
-      });
-      console.log(arr)
-      if(arr && arr.length>1){
-        tasks=arr
-        return true
-      }
-      return false
+    var regex = /^\d+\.\s(.+)/gm;
+    const matches = txt.match(regex);
+    if(!matches){
+        tasks= convertMermaid(txt)
+        return tasks
+    }
+    tasks=[]
+    tasks.push(txt.replace(regex, '')+matches[0])
+    for (let i = 1; i < matches.length; i++) {
+        tasks.push(matches[i])
+    }
+    return true
 }
 
 function task(){
@@ -128,7 +141,7 @@ function buildPrompt() {
         if(goal==undefined){
             textArea.value =tasks[taskNum]
         }else
-            {textArea.value = 'Final Goal:' + goal  + '. Focus on the point ' + tasks[taskNum] + promptTemplate}
+            {textArea.value = 'Final Goal:' + goal  + '. Focus on ' + tasks[taskNum] + promptTemplate}
         document.querySelector('#autorun').click()
         document.querySelector('#task').innerHTML='Next Question: '+tasks[taskNum+1]
         statusCode=setInterval(task,5000)
