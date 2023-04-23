@@ -41,14 +41,16 @@
     }
   }
 
-.hint{
-    font-size: .875rem;
-    color: grey;
-  }
+.autoBtn{
+  border-radius: 1rem;
+  color: white;
+  font-size: .875rem;
+  padding: .1rem;
+}
 
-  .autoBtn{
-    border-radius: 1rem;
-    color: white;
-    font-size: .875rem;
-    padding: .1rem;
-  }
+.autoBtn[disabled]{
+  border-radius: 1rem;
+  color: grey;
+  font-size: .875rem;
+  padding: .1rem;
+}

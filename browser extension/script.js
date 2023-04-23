@@ -1,5 +1,4 @@
-// 0:wait2start  1:wait4gen
-var statusCode
+var intervalCode
 var tasks
 var taskNum = 0
 var goal
@@ -42,10 +41,12 @@ async function addBar() {
     runBtn.addEventListener("click", buildPrompt);
     var stopBtn = bar.querySelector("#stopauto");
     stopBtn.addEventListener("click", stopAuto);
+    stopBtn.disabled = true
     if (tasks != undefined)
         bar.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
     if (!document.querySelector('polygon')) {
-        bar.querySelector('#autorun').style.display = "none"
+        stopBtn.disabled = false
+        runBtn.disabled = true
         bar.querySelector('.loader').style.display = "block"
     }
     textAreaParentParent?.appendChild(bar)
@@ -58,7 +59,7 @@ function checkTasks() {
     if (mermaidCode) {
         var tasksFromMermaid = convertMermaid(mermaidCode.innerHTML);
         if (tasks != undefined && JSON.stringify(tasks) == JSON.stringify(tasksFromMermaid)) {
-            statusCode = clearInterval(statusCode)
+            intervalCode = clearInterval(intervalCode)
             console.log(tasks)
             buildPrompt();
         } else {
@@ -68,15 +69,14 @@ function checkTasks() {
 }
 
 function stopAuto() {
-    statusCode = clearInterval(statusCode)
-    var stopGenBtn = document.querySelector("#__next > div.overflow-hidden.w-full.h-full.relative.flex > div.flex.h-full.max-w-full.flex-1.flex-col > main > div.absolute.bottom-0.left-0.w-full.border-t.md\\:border-t-0.dark\\:border-white\\/20.md\\:border-transparent.md\\:dark\\:border-transparent.md\\:bg-vert-light-gradient.bg-white.dark\\:bg-gray-800.md\\:\\!bg-transparent.dark\\:md\\:bg-vert-dark-gradient.pt-2 > form > div > div:nth-child(1) > div > button")
-    if (stopGenBtn && stopGenBtn.textContent == 'Stop generating') stopGenBtn.click()
-    document.querySelector('#stopauto').style.display = "none"
-    document.querySelector("#autorun").style.display = "block"
+    intervalCode = clearInterval(intervalCode)
+    taskNum += 1
+    document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
     const textArea = document.querySelector("textArea")
     textArea.value = ''
-    document.querySelector('.loader').style.display = "none"
-    taskNum += 1
+    genBtn = document.querySelector("#__next > div.overflow-hidden.w-full.h-full.relative.flex > div.flex.h-full.max-w-full.flex-1.flex-col > main > div.absolute.bottom-0.left-0.w-full.border-t.md\\:border-t-0.dark\\:border-white\\/20.md\\:border-transparent.md\\:dark\\:border-transparent.md\\:bg-vert-light-gradient.bg-white.dark\\:bg-gray-800.md\\:\\!bg-transparent.dark\\:md\\:bg-vert-dark-gradient.pt-2 > form > div > div:nth-child(1) > div > button")
+    if (genBtn && genBtn.textContent == 'Stop generating') genBtn.click()
+    document.querySelector('#autorun').disabled = false
 }
 
 function convertMermaid(mermaidCode) {
@@ -98,14 +98,14 @@ function convertMermaid(mermaidCode) {
 
 
 function convertMarkdown(txt) {
-    var regex = /^\d+\.(.+)$/gm;
+    var regex = /(\d+\.)\s*([^\n]+)/g;
     const matches = txt.match(regex);
-    if (!matches) {
-        tasks = convertMermaid(txt)
+    if(!matches){
+        tasks= convertMermaid(txt)
         return tasks
     }
-    tasks = []
-    tasks.push(txt.replace(regex, '') + matches[0])
+    tasks=[]
+    tasks.push(txt.replace(regex, '')+matches[0])
     for (let i = 1; i < matches.length; i++) {
         tasks.push(matches[i])
     }
@@ -114,28 +114,29 @@ function convertMarkdown(txt) {
 
 function task() {
     if (document.querySelector('polygon')) {
-        statusCode = clearInterval(statusCode)
-        if (tasks != undefined && taskNum < tasks.length)
-            taskNum += 1;
-        buildPrompt()
-        document.querySelector('.loader').style.display = "block"
+        intervalCode = clearInterval(intervalCode)
+        if (tasks != undefined && taskNum < tasks.length) {
+            buildPrompt()
+        }
     }
 }
 
 function buildPrompt() {
     const textArea = document.querySelector("textArea");
     if (!textArea) return
-    const promptTemplate = '. Help me figure out key points and output key points in Mermaid format,dont write any program code.';
+    document.querySelector('#stopauto').disabled = false
+    const promptTemplate = '. Help me figure out key points for the goal and output key points in Mermaid format,dont write any program code.';
     if (tasks == undefined) {
         if (textArea.value == '') return
         if (convertMarkdown(textArea.value)) {
             textArea.value = tasks[taskNum]
-            statusCode = setInterval(task, 5000)
+            taskNum += 1
+            intervalCode = setInterval(task, 5000)
         }
         else {
             goal = textArea.value;
             textArea.value = 'Final Goal:' + goal + promptTemplate
-            statusCode = setInterval(checkTasks, 5000)
+            intervalCode = setInterval(checkTasks, 5000)
         }
     } else {
         if (taskNum == tasks.length || tasks[taskNum] == undefined) {
@@ -147,10 +148,14 @@ function buildPrompt() {
         }
         if (goal == undefined) {
             textArea.value = tasks[taskNum]
-        } else { textArea.value = 'Final Goal:' + goal + '. Focus on ' + tasks[taskNum] + promptTemplate }
-        document.querySelector('#autorun').click()
+        } else { 
+            textArea.value = 'Final Goal:' + goal + '. Focus on ' + tasks[taskNum] + promptTemplate
+        }
         document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
-        document.querySelector('#stopauto').style.display = 'block'
-        statusCode = setInterval(task, 5000)
+        document.querySelector('#autorun').disabled = false
+        document.querySelector('#autorun').click()
+        document.querySelector('#stopauto').disabled = false
+        taskNum += 1;
+        intervalCode = setInterval(task, 5000)
     }
 }
