@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "AutoGPT",
-    "version": "0.1",
-    "description": " Add question a mermaid format ask and then ask step by step",
+    "name": "Auto Ask GPT",
+    "version": "1.0",
+    "description": "Split one question to questions and automatically ask ChatGPT one by one",
     "content_scripts": [
         {
             "matches": [
@@ -15,5 +15,8 @@
                 "script.js"
             ]
         }
-    ]
+    ],
+    "icons": {
+        "128": "autoAskIcon.png"
+    }
 }
