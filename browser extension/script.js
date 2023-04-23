@@ -70,7 +70,9 @@ function checkTasks() {
 
 function stopAuto() {
     intervalCode = clearInterval(intervalCode)
-    taskNum += 1
+    tasks=undefined
+    taskNum = 0
+    goal=undefined
     document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
     const textArea = document.querySelector("textArea")
     textArea.value = ''
