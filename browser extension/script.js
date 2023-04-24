@@ -44,7 +44,7 @@ async function addBar() {
     stopBtn.disabled = true
     if (tasks != undefined)
         bar.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
-    if (!document.querySelector('polygon')) {
+    if (!document.querySelector('polygon') && intervalCode != undefined) {
         stopBtn.disabled = false
         runBtn.disabled = true
         bar.querySelector('.loader').style.display = "block"
@@ -59,7 +59,7 @@ function checkTasks() {
     if (mermaidCode) {
         var tasksFromMermaid = convertMermaid(mermaidCode.innerHTML);
         if (tasks != undefined && JSON.stringify(tasks) == JSON.stringify(tasksFromMermaid)) {
-            intervalCode = clearInterval(intervalCode)
+            clearInterval(intervalCode)
             console.log(tasks)
             buildPrompt();
         } else {
@@ -69,7 +69,7 @@ function checkTasks() {
 }
 
 function stopAuto() {
-    intervalCode = clearInterval(intervalCode)
+    clearInterval(intervalCode)
     tasks=undefined
     taskNum = 0
     goal=undefined
@@ -116,8 +116,8 @@ function convertMarkdown(txt) {
 
 function task() {
     if (document.querySelector('polygon')) {
-        intervalCode = clearInterval(intervalCode)
-        if (tasks != undefined && taskNum < tasks.length) {
+        clearInterval(intervalCode)
+        if (tasks != undefined && taskNum <= tasks.length) {
             buildPrompt()
         }
     }
