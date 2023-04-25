@@ -43,7 +43,7 @@ async function addBar() {
     stopBtn.addEventListener("click", stopAuto);
     stopBtn.disabled = true
     if (tasks != undefined)
-        bar.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
+        bar.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum]
     if (!document.querySelector('polygon') && intervalCode != undefined) {
         stopBtn.disabled = false
         runBtn.disabled = true
@@ -125,6 +125,7 @@ function task() {
 
 function buildPrompt() {
     const textArea = document.querySelector("textArea");
+    document.querySelector('.loader').style.display = "block"
     if (!textArea) return
     document.querySelector('#stopauto').disabled = false
     const promptTemplate = '. Help me figure out key points for the goal and output key points in Mermaid format,dont write any program code.';
@@ -153,11 +154,10 @@ function buildPrompt() {
         } else { 
             textArea.value = 'Final Goal:' + goal + '. Focus on ' + tasks[taskNum] + promptTemplate
         }
-        document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
         document.querySelector('#autorun').disabled = false
         document.querySelector('#autorun').click()
-        document.querySelector('#stopauto').disabled = false
         taskNum += 1;
+        document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum]
         intervalCode = setInterval(task, 5000)
     }
 }
