@@ -2,14 +2,13 @@ var intervalCode
 var tasks
 var taskNum = 0
 var goal
+var reftxt
 
 const rootEl = document.querySelector('div[id="__next"]')
 
 const mutationObserver = new MutationObserver((mutations) => {
 
     if (!mutations.some(mutation => mutation.removedNodes.length > 0)) return
-
-    console.info("autoRun: Mutation observer triggered")
 
     if (document.querySelector(".autobar")) return
     try {
@@ -73,12 +72,14 @@ function stopAuto() {
     tasks=undefined
     taskNum = 0
     goal=undefined
-    document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum + 1]
+    reftxt=undefined
     const textArea = document.querySelector("textArea")
     textArea.value = ''
-    genBtn = document.querySelector("#__next > div.overflow-hidden.w-full.h-full.relative.flex > div.flex.h-full.max-w-full.flex-1.flex-col > main > div.absolute.bottom-0.left-0.w-full.border-t.md\\:border-t-0.dark\\:border-white\\/20.md\\:border-transparent.md\\:dark\\:border-transparent.md\\:bg-vert-light-gradient.bg-white.dark\\:bg-gray-800.md\\:\\!bg-transparent.dark\\:md\\:bg-vert-dark-gradient.pt-2 > form > div > div:nth-child(1) > div > button")
-    if (genBtn && genBtn.textContent == 'Stop generating') genBtn.click()
+    genBtn=Array.from(document.querySelectorAll('div')).find(el => el.textContent === 'Stop generating')
+    console.log(genBtn)
+    if (genBtn) genBtn.querySelector('button').click()
     document.querySelector('#autorun').disabled = false
+    document.querySelector('.loader').style.display = "none"
 }
 
 function convertMermaid(mermaidCode) {
@@ -87,13 +88,12 @@ function convertMermaid(mermaidCode) {
     if (!matches) return false
     const results = [];
     const regexGraph = /\s*graph[\s\S]*/;
-    const cleanTxt = mermaidCode.replace(regexGraph, '')
-    results.push(cleanTxt + '\nPlease analyze the point: ' + matches[0])
+    reftxt = mermaidCode.replace(regexGraph, '')
     for (let i = 1; i < matches.length; i++) {
         const match = matches[i];
         const result = match.substring(1, match.length - 1);
         if (result != goal && result.length > 7)
-            results.push(' next point: ' + result);
+            results.push(result);
     }
     return results
 }
@@ -116,10 +116,14 @@ function convertMarkdown(txt) {
 
 function task() {
     if (document.querySelector('polygon')) {
+        document.querySelector('#autorun').disabled = false
+        document.querySelector('.loader').style.display = "none"
         clearInterval(intervalCode)
         if (tasks != undefined && taskNum <= tasks.length) {
             buildPrompt()
         }
+    }else{
+        document.querySelector('#autorun').disabled = true
     }
 }
 
@@ -134,12 +138,12 @@ function buildPrompt() {
         if (convertMarkdown(textArea.value)) {
             textArea.value = tasks[taskNum]
             taskNum += 1
-            intervalCode = setInterval(task, 5000)
+            intervalCode = setInterval(task, 3000)
         }
         else {
             goal = textArea.value;
             textArea.value = 'Final Goal:' + goal + promptTemplate
-            intervalCode = setInterval(checkTasks, 5000)
+            intervalCode = setInterval(checkTasks, 3000)
         }
     } else {
         if (taskNum == tasks.length || tasks[taskNum] == undefined) {
@@ -152,12 +156,11 @@ function buildPrompt() {
         if (goal == undefined) {
             textArea.value = tasks[taskNum]
         } else { 
-            textArea.value = 'Final Goal:' + goal + '. Focus on ' + tasks[taskNum] + promptTemplate
+            textArea.value = 'Final Goal:' + goal + '.\nPlease analyze the point: ' + tasks[taskNum] + promptTemplate
         }
-        document.querySelector('#autorun').disabled = false
         document.querySelector('#autorun').click()
         taskNum += 1;
         document.querySelector('#task').innerHTML = 'Next Question: ' + tasks[taskNum]
-        intervalCode = setInterval(task, 5000)
+        intervalCode = setInterval(task, 3000)
     }
 }
